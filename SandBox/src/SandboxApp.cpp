@@ -134,7 +134,7 @@ public:
 
 		auto textureShader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
 
-		m_Texture = Next::Texture2D::Create("D:/Projects/MyGameEngine/Hazel/SandBox/assets/textures/star.png");
+		m_Texture = Next::Texture2D::Create("D:/Projects/MyGameEngine/Next/SandBox/assets/textures/star.png");
 
 		std::dynamic_pointer_cast<Next::OpenGLShader>(textureShader)->Bind();
 		std::dynamic_pointer_cast<Next::OpenGLShader>(textureShader)->UploadUniformInt("u_Texture", 0);
