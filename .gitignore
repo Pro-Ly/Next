@@ -1,7 +1,9 @@
 # Directories
-**/bin/
-bin-int/
-!vendor/bin/premake/
+
+/bin/
+/bin-int/
+/Hazel/vendor/Glad/bin-int/
+/Hazel/vendor/Glad/bin/
 
 # Visual Studio Files and Folders
 .vs/
