@@ -1,4 +1,4 @@
-workspace "Hazel"
+workspace "Next"
     architecture "x64"
     startproject "Sandbox"
 
@@ -13,21 +13,21 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 -- Include directories relative to root folder {solution directory}
 IncludeDir = {}
-IncludeDir["GLFW"] = "Hazel/vendor/GLFW/include"
-IncludeDir["Glad"] = "Hazel/vendor/Glad/include"
-IncludeDir["ImGui"] = "Hazel/vendor/imgui"
-IncludeDir["glm"] = "Hazel/vendor/glm"
-IncludeDir["stb_image"] = "Hazel/vendor/stb_image"
+IncludeDir["GLFW"] = "Next/vendor/GLFW/include"
+IncludeDir["Glad"] = "Next/vendor/Glad/include"
+IncludeDir["ImGui"] = "Next/vendor/imgui"
+IncludeDir["glm"] = "Next/vendor/glm"
+IncludeDir["stb_image"] = "Next/vendor/stb_image"
 
 group "Dependecies"
-    include "Hazel/vendor/GLFW"
-    include "Hazel/vendor/Glad"
-    include "Hazel/vendor/imgui"
+    include "Next/vendor/GLFW"
+    include "Next/vendor/Glad"
+    include "Next/vendor/imgui"
 
 group ""
 
-project "Hazel"
-    location "Hazel"
+project "Next"
+    location "Next"
     kind "StaticLib"
     language "C++"
     cppdialect "C++17"
@@ -37,7 +37,7 @@ project "Hazel"
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
     pchheader "hzpch.h"
-    pchsource "Hazel/src/hzpch.cpp"
+    pchsource "Next/src/hzpch.cpp"
 
     files
     {
@@ -80,8 +80,8 @@ project "Hazel"
 
         defines
         {
-            "HZ_PLATFORM_WINDOWS",
-            "HZ_BUILD_DLL",
+            "NX_PLATFORM_WINDOWS",
+            "NX_BUILD_DLL",
             "GLFW_INCLUDE_NONE",
         }
 
@@ -91,17 +91,17 @@ project "Hazel"
         --}
 
     filter "configurations:Debug"
-        defines "HZ_DEBUG"
+        defines "NX_DEBUG"
         runtime "Debug"
         symbols "on"
 
     filter "configurations:Release"
-        defines "HZ_RELEASE"
+        defines "NX_RELEASE"
         runtime "Release"
         optimize "on"
 
     filter "configurations:Dist"
-        defines "HZ_DIST"
+        defines "NX_DIST"
         runtime "Release"
         optimize "on"
 
@@ -125,15 +125,15 @@ project "Sandbox"
 
     includedirs
     {
-        "Hazel/vendor/spdlog/include",
-        "Hazel/src",
-        "Hazel/vendor",
+        "Next/vendor/spdlog/include",
+        "Next/src",
+        "Next/vendor",
         "%{IncludeDir.glm}",
     }
 
     links
     {
-        "Hazel"
+        "Next"
     }
 
     filter "system:windows"
@@ -142,20 +142,20 @@ project "Sandbox"
 
         defines
         {
-            "HZ_PLATFORM_WINDOWS",
+            "NX_PLATFORM_WINDOWS",
         }
 
     filter "configurations:Debug"
-        defines "HZ_DEBUG"
+        defines "NX_DEBUG"
         runtime "Debug"
         symbols "on"
 
     filter "configurations:Release"
-        defines "HZ_RELEASE"
+        defines "NX_RELEASE"
         runtime "Release"
         optimize "on"
 
     filter "configurations:Dist"
-        defines "HZ_DIST"
+        defines "NX_DIST"
         runtime "Release"
         optimize "on"

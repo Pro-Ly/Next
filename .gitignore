@@ -2,8 +2,8 @@
 
 /bin/
 /bin-int/
-/Hazel/vendor/Glad/bin-int/
-/Hazel/vendor/Glad/bin/
+/Next/vendor/Glad/bin-int/
+/Next/vendor/Glad/bin/
 
 # Visual Studio Files and Folders
 .vs/
