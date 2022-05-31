@@ -1,8 +1,8 @@
-#include "hzpch.h"
+#include "nxpch.h"
 #include "RendererContext.h"
 
 #include "Next/Renderer/RendererAPI.h"
-#include "Next/Core.h"
+#include "Next/Core/Ref.h"
 #include "Next/Platform/Vulkan/VulkanContext.h"
 
 namespace Next {
@@ -12,7 +12,7 @@ namespace Next {
 		switch (RendererAPI::GetCurrentType())
 		{
 			case RendererAPIType::None:    return nullptr;
-			case RendererAPIType::Vulkan:  return std::make_shared<VulkanContext>(windowHandle);
+			case RendererAPIType::Vulkan:  return Ref<VulkanContext>::Create(windowHandle);
 		}
 		NX_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;

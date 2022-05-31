@@ -1,4 +1,4 @@
-#include "hzpch.h"
+#include "nxpch.h"
 #include "Application.h"
 
 #include "Next\Log.h"

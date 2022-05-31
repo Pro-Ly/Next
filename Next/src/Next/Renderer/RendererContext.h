@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Next/Core.h"
+#include "Next/Core/Ref.h"
 
 struct  GLFWwindow;
 
 namespace Next {
 
-	class RendererContext
+	class RendererContext : public RefCounted
 	{
 	public:
 		RendererContext() = default;

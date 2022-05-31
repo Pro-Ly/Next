@@ -1,8 +1,8 @@
 #pragma once
 
-#include "hzpch.h"
+#include "nxpch.h"
 
-#include "Next\Core.h"
+#include "Next\Core\Ref.h"
 #include "Next\Events\Event.h"
 
 namespace Next {
@@ -22,7 +22,7 @@ namespace Next {
 	};
 
 	//Interface representing a desktop system based Window
-	class NEXT_API Window
+	class NEXT_API Window : public RefCounted
 	{
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;

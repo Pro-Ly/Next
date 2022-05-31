@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Next/Core.h"
-#include "hzpch.h"
+#include "nxpch.h"
 
 namespace Next {
 

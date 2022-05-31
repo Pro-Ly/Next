@@ -1,4 +1,4 @@
-#include "hzpch.h"
+#include "nxpch.h"
 #include "VulkanContext.h"
 
 #include <GLFW/glfw3.h>
@@ -33,6 +33,7 @@ namespace Next {
 	{
 		InitVulkan();
 		SetupDebugMessenger();
+		PickPhysicalDevice();
 	}
 
 	void VulkanContext::InitVulkan()
@@ -124,6 +125,28 @@ namespace Next {
 
 		if (CreateDebugUtilsMessengerEXT(s_vkInstance, &debugCreateInfo, nullptr, &m_DebugMessenger) != VK_SUCCESS) {
 			NX_CORE_ASSERT(false, ("failed to set up debug messenger!"));
+		}
+	}
+
+	void VulkanContext::PickPhysicalDevice()
+	{
+		uint32_t deviceCount = 0;
+		vkEnumeratePhysicalDevices(s_vkInstance, &deviceCount, nullptr);
+		if (deviceCount == 0) {
+			NX_CORE_ASSERT(false,"failed to find GPUs with Vulkan support!");
+		}
+		std::vector<VkPhysicalDevice> devices(deviceCount);
+		vkEnumeratePhysicalDevices(s_vkInstance, &deviceCount, devices.data());
+
+		//for (const auto& device : devices) {
+		//	if (isDeviceSuitable(device)) {
+		//		physicalDevice = device;
+		//		break;
+		//	}
+		//}
+
+		if (physicalDevice == VK_NULL_HANDLE) {
+			throw std::runtime_error("failed to find a suitable GPU!");
 		}
 	}
 

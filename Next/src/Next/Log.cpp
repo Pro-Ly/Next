@@ -1,4 +1,4 @@
-#include "hzpch.h"
+#include "nxpch.h"
 #include "Log.h"
 
 namespace Next {

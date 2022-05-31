@@ -1,4 +1,4 @@
-#include "hzpch.h"
+#include "nxpch.h"
 #include "WindowsWindow.h"
 
 #include "Next\Events\ApplicationEvent.h"

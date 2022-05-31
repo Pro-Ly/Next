@@ -1,4 +1,4 @@
-#include "hzpch.h"
+#include "nxpch.h"
 #include "WindowsInput.h"
 
 #include "Next\Application.h"

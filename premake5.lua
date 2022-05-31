@@ -37,8 +37,8 @@ project "Next"
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-    pchheader "hzpch.h"
-    pchsource "Next/src/hzpch.cpp"
+    pchheader "nxpch.h"
+    pchsource "Next/src/nxpch.cpp"
 
     files
     {

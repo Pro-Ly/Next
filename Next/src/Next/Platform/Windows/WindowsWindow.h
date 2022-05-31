@@ -1,5 +1,5 @@
 #pragma once
-#include "hzpch.h"
+#include "nxpch.h"
 #include "Next\Window.h"
 #include "Next\Renderer\RendererContext.h"
 
