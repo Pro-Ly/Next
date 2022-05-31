@@ -3,7 +3,6 @@
 
 #include "Next\Log.h"
 #include "Core.h"
-#include "Next/Renderer/Renderer.h"
 
 #include "Input.h"
 
@@ -21,7 +20,7 @@ namespace Next {
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(NX_BIND_EVENT_FN(Application::OnEvent));
 
-		Renderer::Init();
+		//Renderer::Init();
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
@@ -76,6 +75,7 @@ namespace Next {
 			m_ImGuiLayer->End();
 
 			m_Window->OnUpdate();
+
 		}
 	}
 

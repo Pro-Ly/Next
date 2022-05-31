@@ -4,6 +4,7 @@
 /bin-int/
 /Next/vendor/Glad/bin-int/
 /Next/vendor/Glad/bin/
+imgui.ini
 
 # Visual Studio Files and Folders
 .vs/

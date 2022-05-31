@@ -18,6 +18,7 @@ IncludeDir["Glad"] = "Next/vendor/Glad/include"
 IncludeDir["ImGui"] = "Next/vendor/imgui"
 IncludeDir["glm"] = "Next/vendor/glm"
 IncludeDir["stb_image"] = "Next/vendor/stb_image"
+IncludeDir["VulkanSDK"] = "Next/vendor/Vulkan"
 
 group "Dependecies"
     include "Next/vendor/GLFW"
@@ -47,6 +48,8 @@ project "Next"
         "%{prj.name}/vendor/stb_image/**.cpp",
         "%{prj.name}/vendor/glm/glm/**.hpp",
         "%{prj.name}/vendor/glm/glm/**.inl",
+        "%{prj.name}/vendor/Vulkan/Include/**.h",
+        "%{prj.name}/vendor/Vulkan/Include/**.hpp",
     }
 
     defines
@@ -63,6 +66,12 @@ project "Next"
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.stb_image}",
+        "%{IncludeDir.VulkanSDK}/Include",
+    }
+
+    libdirs
+    {
+        "%{IncludeDir.VulkanSDK}/Lib"
     }
 
     links
@@ -72,6 +81,7 @@ project "Next"
         "ImGui",
         "opengl32.lib",
         "Dwmapi.lib",
+        "Vulkan-1.lib",
     }
 
     filter "system:windows"

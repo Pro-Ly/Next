@@ -15,15 +15,7 @@
 #include "Next\ImGui\ImGuiLayer.h"
 
 //---Renderer--------------------
-#include "Next\Renderer\Renderer.h"
-#include "Next\Renderer\RenderCommand.h"
 
-#include "Next\Renderer\Buffer.h"
-#include "Next\Renderer\Shader.h"
-#include "Next\Renderer\Texture.h"
-#include "Next\Renderer\VertexArray.h"
-
-#include "Next\Renderer\Camera.h"
 //--------------------------------
 
 //---Entry Point------------------
