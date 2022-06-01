@@ -2,9 +2,26 @@
 
 #include "Next/Core/Ref.h"
 #include <vulkan/vulkan.h>
+#include <optional>
+#include <set>
 
 namespace Next
 {
+	struct QueueFamilyIndices {
+		std::optional<uint32_t> graphicsFamily;
+		std::optional<uint32_t> presentFamily;
+
+		bool isComplete() {
+			return graphicsFamily.has_value() && presentFamily.has_value();
+		}
+	};
+
+	struct SwapChainSupportDetails {
+		VkSurfaceCapabilitiesKHR capabilities;
+		std::vector<VkSurfaceFormatKHR> formats;
+		std::vector<VkPresentModeKHR> presentModes;
+	};
+
 	class VulkanPhysicalDevice : public RefCounted
 	{
 	public:
@@ -13,10 +30,15 @@ namespace Next
 
 		static Ref<VulkanPhysicalDevice> SelectOne();
 		inline VkPhysicalDevice GetPhysicalDevice() { return m_PhycicalDevice; }
+
+		static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 	private:
 		VkPhysicalDevice m_PhycicalDevice = nullptr;
 	private:
 		bool isDeviceSuitable(VkPhysicalDevice device);
+
+		bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+		SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 	};
 
 	class VulkanDevice : public RefCounted
@@ -30,6 +52,8 @@ namespace Next
 		VkDevice m_LogicDevice = nullptr;
 		VkQueue m_GraphicsQueue = nullptr;
 		VkQueue m_PresentQueue = nullptr;
+	private:
+		
 	};
 }
 
