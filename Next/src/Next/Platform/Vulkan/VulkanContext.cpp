@@ -1,19 +1,11 @@
 #include "nxpch.h"
 #include "VulkanContext.h"
 
+#include "Next\Core.h"
+
 #include <GLFW/glfw3.h>
 
 namespace Next {
-
-	#ifdef NDEBUG
-	const bool enableValidationLayers = false;
-	#else
-	const bool enableValidationLayers = true;
-	#endif
-
-	const std::vector<const char*> validationLayers = {
-		"VK_LAYER_KHRONOS_validation"
-	};
 
 	VulkanContext::VulkanContext(GLFWwindow* windowHandle)
 		:m_Window(windowHandle)
@@ -23,46 +15,32 @@ namespace Next {
 
 	VulkanContext::~VulkanContext()
 	{
-		if (enableValidationLayers) {
+		if (VulkanValiadation::enableValidationLayers) {
 			DestroyDebugUtilsMessengerEXT(s_vkInstance, m_DebugMessenger, nullptr);
 		}
+		m_vkDevice->Destroy();
+		vkDestroySurfaceKHR(s_vkInstance, s_SurfaceKHR, nullptr);
 		vkDestroyInstance(s_vkInstance, nullptr);
+		s_vkInstance = nullptr;
 	}
 
-	void VulkanContext::Create()
+	void VulkanContext::Init()
 	{
 		InitVulkan();
-		SetupDebugMessenger();
-		PickPhysicalDevice();
 	}
 
 	void VulkanContext::InitVulkan()
 	{
-		#pragma region Check ValidationLayer Support
+		VulkanValiadation::CheckValidationLayerSupport();
+		CreateInstance();
+		SetupDebugMessenger();
+		CreateSurface();
+		PickPhysicalDevice();
+		CreateLogicalDevice();
+	}
 
-		if (enableValidationLayers) {
-			bool checkValidationLayerSupport = false;
-
-			uint32_t layerCount;
-			vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
-			std::vector<VkLayerProperties> availableLayers(layerCount);
-			vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-			for (const char* layerName : validationLayers) {
-				for (const auto& layerProperties : availableLayers) {
-					if (strcmp(layerName, layerProperties.layerName) == 0) {
-						checkValidationLayerSupport = true;
-						break;
-					}
-				}
-			}
-			if (!checkValidationLayerSupport) {
-				throw std::runtime_error("validation layers requested, but not available!");
-			}
-		}
-		#pragma endregion
-
+	void VulkanContext::CreateInstance()
+	{
 		#pragma region Create Instance
 		VkApplicationInfo appInfo{};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -80,16 +58,16 @@ namespace Next {
 		const char** glfwExtensions;
 		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 		std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-		if (enableValidationLayers) {
+		if (VulkanValiadation::enableValidationLayers) {
 			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		}
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 		createInfo.ppEnabledExtensionNames = extensions.data();
 
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-		if (enableValidationLayers) {
-			createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-			createInfo.ppEnabledLayerNames = validationLayers.data();
+		if (VulkanValiadation::enableValidationLayers) {
+			createInfo.enabledLayerCount = static_cast<uint32_t>(VulkanValiadation::validationLayers.size());
+			createInfo.ppEnabledLayerNames = VulkanValiadation::validationLayers.data();
 
 			debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 			debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -112,7 +90,7 @@ namespace Next {
 
 	void VulkanContext::SetupDebugMessenger()
 	{
-		if (!enableValidationLayers) return;
+		if (!VulkanValiadation::enableValidationLayers) return;
 
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 
@@ -128,26 +106,21 @@ namespace Next {
 		}
 	}
 
+	void VulkanContext::CreateSurface()
+	{
+		if (glfwCreateWindowSurface(s_vkInstance, m_Window, nullptr, &s_SurfaceKHR) != VK_SUCCESS) {
+			NX_CORE_ASSERT(false,"failed to create window surface!");
+		}
+	}
+
 	void VulkanContext::PickPhysicalDevice()
 	{
-		uint32_t deviceCount = 0;
-		vkEnumeratePhysicalDevices(s_vkInstance, &deviceCount, nullptr);
-		if (deviceCount == 0) {
-			NX_CORE_ASSERT(false,"failed to find GPUs with Vulkan support!");
-		}
-		std::vector<VkPhysicalDevice> devices(deviceCount);
-		vkEnumeratePhysicalDevices(s_vkInstance, &deviceCount, devices.data());
+		m_vkPhycicaldevice = VulkanPhysicalDevice::SelectOne();
+	}
 
-		//for (const auto& device : devices) {
-		//	if (isDeviceSuitable(device)) {
-		//		physicalDevice = device;
-		//		break;
-		//	}
-		//}
-
-		if (physicalDevice == VK_NULL_HANDLE) {
-			throw std::runtime_error("failed to find a suitable GPU!");
-		}
+	void VulkanContext::CreateLogicalDevice()
+	{
+		m_vkDevice = Ref<VulkanDevice>::Create(m_vkPhycicaldevice);
 	}
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::debugCallback(
@@ -156,12 +129,12 @@ namespace Next {
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 		void* pUserData)
 	{
-		if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+		if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
 			// Message is important enough to show
 			NX_CORE_WARN("validation layer:{0} ", pCallbackData->pMessage);
 		}
 
-		if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+		if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
 			// Message is important enough to show
 			NX_CORE_ERROR("validation layer:{0} ", pCallbackData->pMessage);
 		}

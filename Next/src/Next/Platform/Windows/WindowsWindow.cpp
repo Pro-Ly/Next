@@ -61,7 +61,7 @@ namespace Next {
 
 		//Create Renderer Context
 		m_RendererContext = RendererContext::Create(m_Window);
-		m_RendererContext->Create();
+		m_RendererContext->Init();
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 

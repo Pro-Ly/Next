@@ -8,11 +8,12 @@ namespace Next {
 
 	class RendererContext : public RefCounted
 	{
-	public:
+		friend class Ref<RendererContext>;
+	protected:
 		RendererContext() = default;
 		virtual ~RendererContext() = default;
-
-		virtual void Create() = 0;
+	public:
+		virtual void Init() = 0;
 		/*virtual void BeginFrame() = 0;
 		virtual void SwapBuffers() = 0;
 
