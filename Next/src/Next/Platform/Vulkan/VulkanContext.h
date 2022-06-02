@@ -13,8 +13,10 @@ namespace Next {
 		VulkanContext(GLFWwindow* windowHandle);
 		virtual ~VulkanContext();
 		virtual void Init() override;
-		inline static VkInstance  GetVKInstance() { return s_vkInstance; }
-		inline static VkSurfaceKHR GetSurfaceKHR() { return s_SurfaceKHR; }
+
+		inline const static VkInstance  GetVKInstance() { return s_vkInstance; }
+		inline const static VkSurfaceKHR GetSurfaceKHR() { return s_SurfaceKHR; }
+		inline Ref<VulkanDevice> GetDevice() const { return m_vkDevice; }
 	private:
 		GLFWwindow* m_Window;
 		inline static VkInstance s_vkInstance = nullptr;
@@ -29,6 +31,7 @@ namespace Next {
 		void CreateSurface();
 		void PickPhysicalDevice();
 		void CreateLogicalDevice();
+		void CreateSwapChain();
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 		void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);

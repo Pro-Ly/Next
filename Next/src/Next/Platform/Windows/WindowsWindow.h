@@ -2,6 +2,7 @@
 #include "nxpch.h"
 #include "Next\Window.h"
 #include "Next\Renderer\RendererContext.h"
+#include "Next\Platform\Vulkan\VulkanSwapChain.h"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW\glfw3.h>
@@ -34,6 +35,7 @@ namespace Next {
 	private:
 		GLFWwindow* m_Window;
 		Ref<RendererContext> m_RendererContext;
+		VulkanSwapChain m_SwapChain;
 
 		struct WindowData
 		{

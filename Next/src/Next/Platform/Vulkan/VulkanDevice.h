@@ -29,7 +29,7 @@ namespace Next
 		~VulkanPhysicalDevice();
 
 		static Ref<VulkanPhysicalDevice> SelectOne();
-		inline VkPhysicalDevice GetPhysicalDevice() { return m_PhycicalDevice; }
+		const inline VkPhysicalDevice GetPhysicalDevice() const { return m_PhycicalDevice; }
 
 		static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 	private:
@@ -38,7 +38,6 @@ namespace Next
 		bool isDeviceSuitable(VkPhysicalDevice device);
 
 		bool checkDeviceExtensionSupport(VkPhysicalDevice device);
-		SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 	};
 
 	class VulkanDevice : public RefCounted
@@ -47,6 +46,8 @@ namespace Next
 		VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice);
 		~VulkanDevice();
 		void Destroy();
+		Ref<VulkanPhysicalDevice> GetPhysicalDevice() const { return m_PhycicalDevice; }
+		const VkDevice GetLogicalDevice() const { return m_LogicDevice; }
 	private:
 		Ref<VulkanPhysicalDevice> m_PhycicalDevice = nullptr;
 		VkDevice m_LogicDevice = nullptr;

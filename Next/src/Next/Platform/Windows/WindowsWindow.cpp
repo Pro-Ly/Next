@@ -63,6 +63,10 @@ namespace Next {
 		m_RendererContext = RendererContext::Create(m_Window);
 		m_RendererContext->Init();
 
+		Ref<VulkanContext> vkContext = m_RendererContext.As<VulkanContext>();
+		m_SwapChain.Init(vkContext->GetVKInstance(), vkContext->GetDevice());
+		m_SwapChain.Create(m_Window);
+
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 
 		//Set GLFW callbacks
@@ -163,6 +167,7 @@ namespace Next {
 
 	void WindowsWindow::Shutdown()
 	{
+		m_SwapChain.Destroy();
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();
 	}

@@ -1,7 +1,7 @@
 #include "nxpch.h"
 #include "VulkanDevice.h"
 #include "Next/Platform/Vulkan/VulkanContext.h"
-
+#include "Next/Platform/Vulkan/VulkanSwapChain.h"
 
 namespace Next {
 
@@ -94,7 +94,7 @@ namespace Next {
 		
 		bool swapChainAdequate = false;
 		if (extensionsSupported) {
-			SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+			SwapChainSupportDetails swapChainSupport = VulkanSwapChain::querySwapChainSupport(device,VulkanContext::GetSurfaceKHR());
 			swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 		}
 
@@ -120,31 +120,6 @@ namespace Next {
 		}
 
 		return requiredExtensions.empty();
-	}
-
-	SwapChainSupportDetails VulkanPhysicalDevice::querySwapChainSupport(VkPhysicalDevice device)
-	{
-		SwapChainSupportDetails details;
-		auto surface = VulkanContext::GetSurfaceKHR();
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
-
-		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
-
-		if (formatCount != 0) {
-			details.formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
-		}
-
-		uint32_t presentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
-
-		if (presentModeCount != 0) {
-			details.presentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
-		}
-
-		return details;
 	}
 
 	VulkanDevice::VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice)

@@ -37,6 +37,7 @@ namespace Next {
 		CreateSurface();
 		PickPhysicalDevice();
 		CreateLogicalDevice();
+		CreateSwapChain();
 	}
 
 	void VulkanContext::CreateInstance()
@@ -121,6 +122,11 @@ namespace Next {
 	void VulkanContext::CreateLogicalDevice()
 	{
 		m_vkDevice = Ref<VulkanDevice>::Create(m_vkPhycicaldevice);
+	}
+
+	void VulkanContext::CreateSwapChain()
+	{
+
 	}
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::debugCallback(
