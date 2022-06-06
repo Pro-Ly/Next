@@ -1,7 +1,8 @@
 #include "nxpch.h"
 #include "VulkanContext.h"
+#include "VulkanImage.h"
 
-#include "Next\Core.h"
+#include "Next\Core\Core.h"
 
 #include <GLFW/glfw3.h>
 
@@ -18,9 +19,11 @@ namespace Next {
 		if (VulkanValiadation::enableValidationLayers) {
 			DestroyDebugUtilsMessengerEXT(s_vkInstance, m_DebugMessenger, nullptr);
 		}
+		
 		m_vkDevice->Destroy();
 		vkDestroySurfaceKHR(s_vkInstance, s_SurfaceKHR, nullptr);
 		vkDestroyInstance(s_vkInstance, nullptr);
+
 		s_vkInstance = nullptr;
 	}
 
@@ -37,7 +40,8 @@ namespace Next {
 		CreateSurface();
 		PickPhysicalDevice();
 		CreateLogicalDevice();
-		CreateSwapChain();
+		CreateImageViews(m_SwapChain);
+		CreateGraphicsPipeline();
 	}
 
 	void VulkanContext::CreateInstance()
@@ -124,7 +128,12 @@ namespace Next {
 		m_vkDevice = Ref<VulkanDevice>::Create(m_vkPhycicaldevice);
 	}
 
-	void VulkanContext::CreateSwapChain()
+	void VulkanContext::CreateImageViews(VulkanSwapChain& swapChain)
+	{
+		Ref<VulkanImage>::Create(swapChain, m_vkDevice);
+	}
+
+	void VulkanContext::CreateGraphicsPipeline()
 	{
 
 	}

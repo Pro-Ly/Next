@@ -9,6 +9,9 @@
 #include "Next/Platform/Windows/WindowsInput.h"
 
 #include "Next/Renderer/RendererAPI.h"
+#include "Next/Renderer/Pipeline.h"
+
+#include "Next/Platform/Vulkan/VulkanContext.h"
 
 namespace Next {
 
@@ -19,14 +22,15 @@ namespace Next {
 		NX_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
 	}
 
-	Window* Window::Create(const WindowProps& props)
+	Window* Window::Create(const WindowSpecification& windowSpec)
 	{
-		return new WindowsWindow(props);
+		return new WindowsWindow(windowSpec);
 	}
 
-	WindowsWindow::WindowsWindow(const WindowProps& props)
+	WindowsWindow::WindowsWindow(const WindowSpecification& windowSpec)
+		:m_WindowSpec(windowSpec)
 	{
-		InitWindow(props);
+	
 	}
 
 	WindowsWindow::~WindowsWindow()
@@ -34,13 +38,13 @@ namespace Next {
 		Shutdown();
 	}
 
-	void WindowsWindow::InitWindow(const WindowProps& props)
+	void WindowsWindow::InitWindow(const WindowSpecification& windowSpec)
 	{
-		m_Data.Title = props.Title;
-		m_Data.Width = props.Width;
-		m_Data.Height = props.Height;
+		m_Data.Title = windowSpec.Title;
+		m_Data.Width = windowSpec.Width;
+		m_Data.Height = windowSpec.Height;
 
-		NX_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
+		NX_CORE_INFO("Creating window {0} ({1}, {2})", windowSpec.Title, windowSpec.Width, windowSpec.Height);
 
 		if (!s_GLFWInitialized)
 		{
@@ -57,7 +61,7 @@ namespace Next {
 		
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // TEMP NOT RESIZE
 
-		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+		m_Window = glfwCreateWindow((int)windowSpec.Width, (int)windowSpec.Height, m_Data.Title.c_str(), nullptr, nullptr);
 
 		//Create Renderer Context
 		m_RendererContext = RendererContext::Create(m_Window);
@@ -67,8 +71,23 @@ namespace Next {
 		m_SwapChain.Init(vkContext->GetVKInstance(), vkContext->GetDevice());
 		m_SwapChain.Create(m_Window);
 
+		PipelineSpecification spec;
+		 m_Pipeline = Pipeline::Create(spec);
+
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 
+		SetGLFWEventCallback();
+	}
+
+
+	void WindowsWindow::Shutdown()
+	{
+		m_SwapChain.Destroy();
+		glfwTerminate();
+	}
+
+	void WindowsWindow::SetGLFWEventCallback()
+	{
 		//Set GLFW callbacks
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 			{
@@ -164,17 +183,14 @@ namespace Next {
 			});
 	}
 
-
-	void WindowsWindow::Shutdown()
-	{
-		m_SwapChain.Destroy();
-		glfwDestroyWindow(m_Window);
-		glfwTerminate();
-	}
-
 	void WindowsWindow::OnUpdate()
 	{
 		glfwPollEvents();
+	}
+
+	void WindowsWindow::Init()
+	{
+		InitWindow(m_WindowSpec);
 	}
 
 }

@@ -2,7 +2,7 @@
 #include "Application.h"
 
 #include "Next\Log.h"
-#include "Core.h"
+#include "Core/Core.h"
 
 #include "Input.h"
 
@@ -18,6 +18,7 @@ namespace Next {
 		s_Instance = this;
 
 		m_Window = std::unique_ptr<Window>(Window::Create());
+		m_Window->Init();
 		m_Window->SetEventCallback(NX_BIND_EVENT_FN(Application::OnEvent));
 
 		//Renderer::Init();

@@ -1,6 +1,6 @@
 #include "nxpch.h"
 #include "VulkanValiadation.h"
-#include "Next/Core.h"
+#include "Next/Core/Core.h"
 
 #include "vulkan/vulkan.h"
 
