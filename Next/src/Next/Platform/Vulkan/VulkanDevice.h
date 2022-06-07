@@ -29,7 +29,7 @@ namespace Next
 		~VulkanPhysicalDevice();
 
 		static Ref<VulkanPhysicalDevice> SelectOne();
-		const inline VkPhysicalDevice GetPhysicalDevice() const { return m_PhycicalDevice; }
+		const inline VkPhysicalDevice GetDevice() const { return m_PhycicalDevice; }
 
 		static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 	private:

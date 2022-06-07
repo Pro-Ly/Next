@@ -19,6 +19,7 @@ namespace Next
 		inline const VkFormat GetSwapChainImageFormat() const { return m_SwapChainImageFormat; }
 		inline const VkExtent2D GetExtend2D() const { return m_SwapChainExtent; }
 		inline const VkRenderPass GetRenderPass() const { return m_RenderPass; }
+		inline const std::vector<VkFramebuffer> GetSwapChainFramebuffers() const { return m_SwapChainFramebuffers; }
 		void Destroy();
 		static SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice& device, VkSurfaceKHR surface);
 	private:
@@ -28,6 +29,7 @@ namespace Next
 		std::vector<VkImage> m_SwapChainImages;
 		VkFormat m_SwapChainImageFormat;
 		VkExtent2D m_SwapChainExtent;
+		std::vector<VkFramebuffer> m_SwapChainFramebuffers;
 	private:
 
 		VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);

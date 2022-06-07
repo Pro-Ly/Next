@@ -35,9 +35,17 @@ namespace Next {
 
 	VulkanImage::~VulkanImage()
 	{
+		Release();
+	}
+
+	void VulkanImage::Release()
+	{
+		if (m_SwapChainImageViews.empty())
+			return;
 		for (auto imageView : m_SwapChainImageViews) {
 			vkDestroyImageView(m_VkDevice->GetLogicalDevice(), imageView, nullptr);
 		}
+		m_SwapChainImageViews.clear();
 	}
 
 }

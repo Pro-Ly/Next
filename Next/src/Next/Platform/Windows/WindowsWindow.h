@@ -1,6 +1,8 @@
 #pragma once
 #include "nxpch.h"
 #include "Next\Window.h"
+#include "Next\Application.h"
+
 #include "Next\Platform\Vulkan\VulkanSwapChain.h"
 
 #define GLFW_INCLUDE_VULKAN
@@ -9,6 +11,8 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include "Next\Renderer\RendererContext.h"
+#include "Next\Renderer\RenderCommandBuffer.h"
+#include "Next\Renderer\SceneRenderer.h"
 
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
@@ -25,6 +29,7 @@ namespace Next {
 
 		void OnUpdate() override;
 
+		static inline WindowsWindow& Get() { return (WindowsWindow&)Application::Get().GetWindow(); }
 		inline unsigned int GetWidth() const override { return m_Data.Width; }
 		inline unsigned int GetHeight() const override { return m_Data.Height; }
 
@@ -42,6 +47,7 @@ namespace Next {
 		WindowSpecification m_WindowSpec;
 		Ref<RendererContext> m_RendererContext;
 		VulkanSwapChain m_SwapChain;
+		Ref<SceneRenderer> m_SceneRenderer;
 
 		struct WindowData
 		{
@@ -55,6 +61,7 @@ namespace Next {
 		WindowData m_Data;
 
 		Ref<Pipeline> m_Pipeline;//TODO 
+	
 	private:
 		void SetGLFWEventCallback();
 	};

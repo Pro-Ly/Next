@@ -125,7 +125,7 @@ namespace Next {
 	VulkanDevice::VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice)
 		:m_PhycicalDevice(physicalDevice)
 	{
-		auto vkPhisicalDevice = m_PhycicalDevice->GetPhysicalDevice();
+		auto vkPhisicalDevice = m_PhycicalDevice->GetDevice();
 		QueueFamilyIndices indices = VulkanPhysicalDevice::findQueueFamilies(vkPhisicalDevice);
 
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;

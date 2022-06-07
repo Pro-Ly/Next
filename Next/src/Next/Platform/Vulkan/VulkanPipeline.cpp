@@ -191,6 +191,8 @@ namespace Next {
 
 		vkDestroyShaderModule(device, fragShaderModule, nullptr);
 		vkDestroyShaderModule(device, vertShaderModule, nullptr);
+
+
 	}
 
 	VulkanPipeline::~VulkanPipeline()

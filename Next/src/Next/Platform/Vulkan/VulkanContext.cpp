@@ -19,7 +19,7 @@ namespace Next {
 		if (VulkanValiadation::enableValidationLayers) {
 			DestroyDebugUtilsMessengerEXT(s_vkInstance, m_DebugMessenger, nullptr);
 		}
-		
+		m_Image->Release();
 		m_vkDevice->Destroy();
 		vkDestroySurfaceKHR(s_vkInstance, s_SurfaceKHR, nullptr);
 		vkDestroyInstance(s_vkInstance, nullptr);
@@ -40,7 +40,6 @@ namespace Next {
 		CreateSurface();
 		PickPhysicalDevice();
 		CreateLogicalDevice();
-		CreateImageViews(m_SwapChain);
 		CreateGraphicsPipeline();
 	}
 
@@ -130,7 +129,7 @@ namespace Next {
 
 	void VulkanContext::CreateImageViews(VulkanSwapChain& swapChain)
 	{
-		Ref<VulkanImage>::Create(swapChain, m_vkDevice);
+		m_Image = Ref<VulkanImage>::Create(swapChain, m_vkDevice);
 	}
 
 	void VulkanContext::CreateGraphicsPipeline()

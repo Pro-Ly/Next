@@ -24,7 +24,7 @@ namespace Next {
 	void VulkanSwapChain::Create(GLFWwindow* window)
 	{
 		auto surface = VulkanContext::GetSurfaceKHR();
-		auto phycicalDevice = m_Device->GetPhysicalDevice()->GetPhysicalDevice();
+		auto phycicalDevice = m_Device->GetPhysicalDevice()->GetDevice();
 		SwapChainSupportDetails swapChainSupport = querySwapChainSupport(phycicalDevice, surface);
 
 		VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -121,11 +121,40 @@ namespace Next {
 		if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS) {
 			NX_CORE_ASSERT(false,"failed to create render pass!");
 		}
+
+		VulkanContext::Get()->CreateImageViews(*this);
+
+		//Create FrameBuffers for every image in swapchains
+		auto swapChainImageViews = Renderer::GetContext().As<VulkanContext>()->GetImage()->GetSwapChainImageViews();
+		m_SwapChainFramebuffers.resize(swapChainImageViews.size());
+
+		for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+			VkImageView attachments[] = {
+				swapChainImageViews[i]
+			};
+
+			VkFramebufferCreateInfo framebufferInfo{};
+			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferInfo.renderPass = m_RenderPass;
+			framebufferInfo.attachmentCount = 1;
+			framebufferInfo.pAttachments = attachments;
+			framebufferInfo.width = m_SwapChainExtent.width;
+			framebufferInfo.height = m_SwapChainExtent.height;
+			framebufferInfo.layers = 1;
+
+			if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_SwapChainFramebuffers[i]) != VK_SUCCESS) {
+				NX_CORE_ASSERT(false,"failed to create framebuffer!");
+			}
+		}
+
 	}
 
 	void VulkanSwapChain::Destroy()
 	{
 		auto device = m_Device->GetLogicalDevice();
+		for (auto framebuffer : m_SwapChainFramebuffers) {
+			vkDestroyFramebuffer(device, framebuffer, nullptr);
+		}
 		vkDestroySwapchainKHR(device, m_SwapChain, nullptr);
 		vkDestroyRenderPass(device, m_RenderPass, nullptr);
 	}

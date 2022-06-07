@@ -5,6 +5,8 @@
 #include "Core/Core.h"
 
 #include "Input.h"
+#include "Renderer/Renderer.h"
+#include "Renderer/SceneRenderer.h"
 
 #include <GLFW/glfw3.h>
 
@@ -17,11 +19,13 @@ namespace Next {
 		NX_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
+		Renderer::Init();
+
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->Init();
 		m_Window->SetEventCallback(NX_BIND_EVENT_FN(Application::OnEvent));
 
-		//Renderer::Init();
+	
 
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);

@@ -72,7 +72,7 @@ namespace Next {
 		m_SwapChain.Create(m_Window);
 
 		PipelineSpecification spec;
-		 m_Pipeline = Pipeline::Create(spec);
+		m_Pipeline = Pipeline::Create(spec);
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 
@@ -191,6 +191,7 @@ namespace Next {
 	void WindowsWindow::Init()
 	{
 		InitWindow(m_WindowSpec);
+		m_SceneRenderer = Ref<SceneRenderer>::Create();
 	}
 
 }

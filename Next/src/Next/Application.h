@@ -13,7 +13,7 @@
 
 namespace Next {
 
-	class NEXT_API  Application
+	class NEXT_API Application
 	{
 	public:
 		Application();
