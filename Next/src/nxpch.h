@@ -16,7 +16,7 @@
 #include <set>
 #include <map>
 
-#include "Next\Log.h"
+#include "Next\Core\Log.h"
 
 #ifdef NX_PLATFORM_WINDOWS
 	#include<Windows.h>

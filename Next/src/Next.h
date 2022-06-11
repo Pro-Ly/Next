@@ -2,17 +2,17 @@
 
 //For use by Next applications
 
-#include "Next\Application.h"
-#include "Next\Layer.h"
-#include "Next\Log.h"
+#include "Next\Core\Application.h"
+#include "Next\Core\Layer.h"
+#include "Next\Core\Log.h"
 
 #include "Next/Core/Timestep.h"
 
-#include "Next\Input.h"
-#include "Next\MouseButtonCodes.h"
-#include "Next\KeyCodes.h"
+#include "Next\Core\Input.h"
+#include "Next\Core\MouseButtonCodes.h"
+#include "Next\Core\KeyCodes.h"
 
-#include "Next\ImGui\ImGuiLayer.h"
+#include "Next\Editor\EditorLayer.h"
 
 //---Renderer--------------------
 

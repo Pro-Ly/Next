@@ -1,6 +1,6 @@
 workspace "Next"
     architecture "x64"
-    startproject "Sandbox"
+    startproject "GameEngine"
 
     configurations
     {
@@ -31,7 +31,7 @@ project "Next"
     location "Next"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
     staticruntime "off"
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
@@ -59,7 +59,8 @@ project "Next"
 
     includedirs
     {
-        "%{prj.name}/src",
+        "%{prj.name}/src/",
+        "%{prj.name}/src/Next/",
         "%{prj.name}/vendor/spdlog/include",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.Glad}",
@@ -85,7 +86,7 @@ project "Next"
     }
 
     filter "system:windows"
-        cppdialect "C++17"
+        cppdialect "C++20"
         systemversion "latest"
 
         defines
@@ -97,7 +98,7 @@ project "Next"
 
         --postbuildcommands
         --{
-        --    ("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/Sandbox/\"")
+        --    ("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/GameEngine/\"")
         --}
 
     filter "configurations:Debug"
@@ -115,11 +116,11 @@ project "Next"
         runtime "Release"
         optimize "on"
 
-project "Sandbox"
-    location "Sandbox"
+project "GameEngine"
+    location "GameEngine"
     kind "ConsoleApp"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
     staticruntime "off"
 
     targetdir ("bin/" .. outputdir .. "/%{prj.name}")
@@ -147,7 +148,7 @@ project "Sandbox"
     }
 
     filter "system:windows"
-        cppdialect "C++17"
+        cppdialect "C++20"
         systemversion "latest"
 
         defines
