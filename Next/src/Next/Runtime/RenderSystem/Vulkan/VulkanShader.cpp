@@ -1,10 +1,11 @@
 #include "nxpch.h"
 #include "VulkanShader.h"
+#include "VulkanRenderer.h"
 
 namespace Next {
 
-	VulkanShader::VulkanShader(VkDevice vkDevice, const std::string& vertFilePath, const std::string& fragFilePath)
-		:m_VkDevice(vkDevice), Shader(vertFilePath, fragFilePath)
+	VulkanShader::VulkanShader(const std::string& vertFilePath, const std::string& fragFilePath)
+		: Shader(vertFilePath, fragFilePath)
 	{
 		//vertShader
 		if (!m_VertCode.empty())
@@ -38,13 +39,14 @@ namespace Next {
 
 	VkShaderModule VulkanShader::createShaderModule(std::vector<char>& code)
 	{
+		auto device = VulkanRenderer::GetContext()->m_VulkanDevice->GetVkDevice();
 		VkShaderModuleCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		createInfo.codeSize = code.size();
 		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
 		VkShaderModule shaderModule;
-		NX_CHECK_VKRESULT(vkCreateShaderModule(m_VkDevice, &createInfo, nullptr, &shaderModule));
+		NX_CHECK_VKRESULT(vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule));
 
 		return shaderModule;
 
@@ -52,10 +54,12 @@ namespace Next {
 
 	void VulkanShader::Release()
 	{
+		auto device = VulkanRenderer::GetContext()->m_VulkanDevice->GetVkDevice();
+
 		for (const auto& createInfo : m_PipelinShaderStageCreateInfos)
 		{
 			if (createInfo.module)
-				vkDestroyShaderModule(m_VkDevice, createInfo.module, nullptr);
+				vkDestroyShaderModule(device, createInfo.module, nullptr);
 		}
 		m_PipelinShaderStageCreateInfos.clear();
 	}

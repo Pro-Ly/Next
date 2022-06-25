@@ -51,8 +51,6 @@ namespace Next {
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);//Only for Vulkan!!!
 
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // TODO TEMP NOT RESIZE
-
 		m_Window = glfwCreateWindow((int)windowSpec.Width, (int)windowSpec.Height, m_Data.Title.c_str(), nullptr, nullptr);
 
 		// Update window size to actual size

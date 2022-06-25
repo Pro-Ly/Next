@@ -7,24 +7,7 @@
 
 namespace Next {
 
-	const std::vector<VertexBuffer::Vertex> vertices = {
-		{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
-		{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},
-		{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
-		{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
 
-		{{-0.5f, -0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
-		{{0.5f, -0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f}},
-		{{0.5f, 0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
-		{{-0.5f, 0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}}
-
-
-	};
-
-	const std::vector<uint16_t> indices = {
-		0, 1, 2, 2, 3, 0,
-		4, 5 ,6 ,6 ,7 ,4
-	};
 
 	VulkanContext::VulkanContext()
 	{
@@ -48,13 +31,13 @@ namespace Next {
 
 		m_VulkanDevice = Ref<VulkanDevice>::Create(m_VkInstance, m_VkSurface);
 
-		m_VulkanDevice->createSwapChain();
+		VulkanAllocator::Init(m_VkInstance);
+
+		m_VulkanSwapChain = m_VulkanDevice->createSwapChain();
+
+		m_VulkanDevice->createColorResources();
 
 		m_GraphicsQueue = m_VulkanDevice->GetGraphicsQueue();
-
-		m_VulkanSwapChain = m_VulkanDevice->m_VulkanSwapChain;
-
-		VulkanAllocator::Init(m_VulkanDevice, m_VkInstance);
 
 		auto device = m_VulkanDevice->GetVkDevice();
 
@@ -79,7 +62,15 @@ namespace Next {
 
 		// Create Synchronization Objects End
 
-		m_MainRenderPass = Ref<VulkanRenderPass>::Create(device, m_VulkanSwapChain->GetSurfaceFormat());
+
+
+		m_VulkanImage = Ref<VulkanImage>::Create();
+		m_VulkanImage->LoadByFile("assets/textures/viking_room.png");
+
+		m_DepthImage = Ref<VulkanImage>::Create();
+		m_DepthImage->CreateDepthResource();
+
+		m_MainRenderPass = Ref<VulkanRenderPass>::Create(m_VulkanSwapChain->GetSurfaceFormat());
 
 		// Create FrameBuffers for every swapchain image Begin
 
@@ -87,9 +78,10 @@ namespace Next {
 		for (uint32_t i = 0; i < m_SwapChainFramebuffers.size(); i++)
 		{
 			VulkanFrameBuffer::InitInfo frameBufferInitInfo = {};
-			frameBufferInitInfo.vkDevice = m_VulkanDevice->GetVkDevice();
 			frameBufferInitInfo.vkRenderPass = m_MainRenderPass->GetPass();
-			frameBufferInitInfo.vkImageView = m_VulkanSwapChain->GetImageViews()[i];
+			frameBufferInitInfo.colorImageView = m_VulkanDevice->m_ColorImageView;
+			frameBufferInitInfo.depthImageView = m_DepthImage->GetImageView();
+			frameBufferInitInfo.swapChainImageView = m_VulkanSwapChain->GetImageViews()[i];
 			frameBufferInitInfo.width = m_VulkanSwapChain->GetExtend2D().width;
 			frameBufferInitInfo.height = m_VulkanSwapChain->GetExtend2D().height;
 			m_SwapChainFramebuffers[i] = Ref<VulkanFrameBuffer>::Create(frameBufferInitInfo);
@@ -97,19 +89,18 @@ namespace Next {
 
 		// Create FrameBuffers for every swapchain image End
 
-
-		m_VulkanImage = Ref<VulkanImage>::Create("assets/textures/texture.jpg");
-
-
-		//Pipeline Begin
-		m_VulkanPipeline = Ref<VulkanPipeline>::Create(m_VulkanDevice->GetVkDevice());
+		model = Ref<Model>::Create();
+		model->LoadObjFile("assets/models/viking_room.obj");
 
 		//VertexBuffer
 
+		auto vertices = model->GetVertices();
 		m_VulkanVertexBuffer = Ref<VulkanVertexBuffer>::Create(sizeof(vertices[0]) * vertices.size());
 		m_VulkanVertexBuffer->SetData((void*)vertices.data(), sizeof(vertices[0]) * vertices.size());
 
 		//IndexBuffer
+
+		auto indices = model->GetIndices();
 		m_VulkanIndexBuffer = Ref<VulkanIndexBuffer>::Create(sizeof(indices[0]) * indices.size());
 		m_VulkanIndexBuffer->SetData((void*)indices.data(), sizeof(indices[0]) * indices.size());
 
@@ -170,13 +161,18 @@ namespace Next {
 		};
 
 		//Shader
-		auto shader = Ref<VulkanShader>::Create(device, "assets/shaders/vert.spv", "assets/shaders/frag.spv");
+		auto shader = Ref<VulkanShader>::Create( "assets/shaders/vert.spv", "assets/shaders/frag.spv");
+		
+		//Pipeline Begin
+		m_VulkanPipeline = Ref<VulkanPipeline>::Create();
+
 		VulkanPipeline::Config pipelineConfig(
 			m_MainRenderPass->GetPass(),
 			m_VulkanSwapChain->GetExtend2D(),
 			shader,
 			layout,
 			descriptorSetLayout);
+
 
 		m_VulkanPipeline->Set(pipelineConfig);
 
@@ -426,16 +422,19 @@ namespace Next {
 
 		NX_CHECK_VKRESULT(vkBeginCommandBuffer(commandBuffer, &beginInfo));
 
+		//order should be identical to the order of attachments
+		std::array<VkClearValue, 2> clearValues{};
+		clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
 		VkRenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = m_MainRenderPass->GetPass();
 		renderPassInfo.framebuffer = m_SwapChainFramebuffers[imageIndex]->Get();
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		renderPassInfo.renderArea.extent = m_VulkanSwapChain->GetExtend2D();
-
-		VkClearValue clearColor = { {0.0f, 0.0f, 0.0f, 1.0f} };
-		renderPassInfo.clearValueCount = 1;
-		renderPassInfo.pClearValues = &clearColor;
+		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());;
+		renderPassInfo.pClearValues = clearValues.data();
 
 		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -445,10 +444,11 @@ namespace Next {
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-		vkCmdBindIndexBuffer(commandBuffer, m_VulkanIndexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
+		vkCmdBindIndexBuffer(commandBuffer, m_VulkanIndexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_VulkanPipeline->GetVkPipelineLayout(), 0, 1, &descriptorSets[m_CurFrameIndex], 0, nullptr);
 
+		auto indices = model->GetIndices();
 		vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 		vkCmdEndRenderPass(commandBuffer);

@@ -1,6 +1,8 @@
 #include "nxpch.h"
 #include "VulkanDevice.h"
 #include "Runtime/RenderSystem/RenderSystem.h"
+#include "VulkanAllocator.h"
+#include "VulkanRenderer.h"
 
 #include <vector>
 #include <set>
@@ -57,11 +59,9 @@ namespace Next {
 		NX_CHECK_VKRESULT(vkResetCommandPool(m_VkDevice, m_RenderCmdPools[frameIdx], 0));
 	}
 
+
 	void VulkanDevice::selectPhysicalDevice()
 	{
-
-		// Select Physical Device Begin
-
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(m_VkInstance, &deviceCount, nullptr);
 
@@ -73,19 +73,19 @@ namespace Next {
 		for (const auto& device : devices) {
 			VkPhysicalDeviceProperties deviceProperty;
 			vkGetPhysicalDeviceProperties(device, &deviceProperty);
+			//only use Discrete GPU ( ∂¿¡¢œ‘ø® ) £°
 			if (deviceProperty.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
 				m_PhysicalDevice = device;
 				//Scan Supported Features
 				VkPhysicalDeviceFeatures supportedFeatures;
 				vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
-
+				
+				m_MSAASamples = getMaxUsableSampleCount();
 				break;
 			}
 		}
 
 		NX_CORE_ASSERT(m_PhysicalDevice, "failed to find a suitable GPU!");
-
-		// Select Physical Device End
 	}
 
 	void VulkanDevice::createVkDeviceAndQueue()
@@ -150,6 +150,7 @@ namespace Next {
 		enabledFeatures.fillModeNonSolid = true;
 		enabledFeatures.independentBlend = true;
 		enabledFeatures.pipelineStatisticsQuery = true;
+		enabledFeatures.sampleRateShading = VK_TRUE;
 
 		VkDeviceCreateInfo deviceCreateInfo{};
 		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -175,7 +176,7 @@ namespace Next {
 		// Create Logical Device End
 	}
 
-	void VulkanDevice::createSwapChain()
+	Ref<VulkanSwapChain> VulkanDevice::createSwapChain()
 	{
 		const RendererConfig& rendererConfig = RenderSystem::GetConfig();
 		VulkanSwapChain::InitInfo swapChainInitInfo = {};
@@ -185,7 +186,7 @@ namespace Next {
 		swapChainInitInfo.vkPhysicalDevice = m_PhysicalDevice;
 		swapChainInitInfo.vkDevice = m_VkDevice;
 		swapChainInitInfo.presentQueue = m_PresentQueue;
-		m_VulkanSwapChain = Ref<VulkanSwapChain>::Create(swapChainInitInfo);
+		return Ref<VulkanSwapChain>::Create(swapChainInitInfo);
 	}
 
 	void VulkanDevice::createCommandPools()
@@ -233,6 +234,35 @@ namespace Next {
 		}
 	}
 
+	void VulkanDevice::createColorResources()
+	{
+		auto swapChain = VulkanRenderer::GetContext()->m_VulkanSwapChain;
+		VkFormat colorFormat = swapChain->GetSurfaceFormat().format;
+		VkExtent2D extent = swapChain->GetExtend2D();
+
+		VulkanAllocator allocator("Color Resource");
+
+		//Create VkImage
+		VkImageCreateInfo imageInfo{};
+		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		imageInfo.imageType = VK_IMAGE_TYPE_2D;
+		imageInfo.extent.width = static_cast<uint32_t>(extent.width);
+		imageInfo.extent.height = static_cast<uint32_t>(extent.height);
+		imageInfo.extent.depth = 1;
+		imageInfo.mipLevels = 1; // optional
+		imageInfo.arrayLayers = 1;
+		imageInfo.format = colorFormat;
+		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+		imageInfo.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		imageInfo.samples = m_MSAASamples;
+		imageInfo.flags = 0; // Optional
+
+		m_ColorResourceImageAllocation = allocator.AllocateImage(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_ColorImage);
+
+		m_ColorImageView = CreateImageView(m_ColorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+	}
+
 	VulkanDevice::QueueFamilyIndices VulkanDevice::getQueueFamilies(VkPhysicalDevice device) {
 		QueueFamilyIndices indices;
 
@@ -265,7 +295,7 @@ namespace Next {
 		return indices;
 	}
 
-	VkImageView VulkanDevice::CreateImageView(VkImage image, VkFormat format) {
+	VkImageView VulkanDevice::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels) {
 		//Create Image View Begin
 
 		VkImageViewCreateInfo viewInfo{};
@@ -273,9 +303,9 @@ namespace Next {
 		viewInfo.image = image;
 		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		viewInfo.format = format;
-		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		viewInfo.subresourceRange.aspectMask = aspectFlags;
 		viewInfo.subresourceRange.baseMipLevel = 0;
-		viewInfo.subresourceRange.levelCount = 1;
+		viewInfo.subresourceRange.levelCount = mipLevels;
 		viewInfo.subresourceRange.baseArrayLayer = 0;
 		viewInfo.subresourceRange.layerCount = 1;
 
@@ -285,4 +315,47 @@ namespace Next {
 
 		return imageView;
 	}
+
+	VkFormat VulkanDevice::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+	{
+		for (VkFormat format : candidates) {
+			VkFormatProperties props;
+			vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice, format, &props);
+			if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+				return format;
+			}
+			else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+				return format;
+			}
+		}
+
+		NX_CORE_ASSERT(false, "failed to find supported format!");
+
+	}
+
+	VkFormat VulkanDevice::findDepthFormat()
+	{
+		return findSupportedFormat(
+			{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+		);
+	}
+
+	VkSampleCountFlagBits VulkanDevice::getMaxUsableSampleCount()
+	{
+		VkPhysicalDeviceProperties physicalDeviceProperties;
+		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &physicalDeviceProperties);
+
+		VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+		if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+		if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+		if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+		if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
+		if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
+		if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+
+		return VK_SAMPLE_COUNT_1_BIT;
+	}
+
 }

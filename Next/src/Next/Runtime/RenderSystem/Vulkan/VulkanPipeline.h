@@ -21,15 +21,13 @@ namespace Next {
 			VkDescriptorSetLayout vkDescriptorSetLayout;
 		};
 
-		VulkanPipeline(VkDevice vkDevice);
+		VulkanPipeline();
 		~VulkanPipeline();
 		void Set(Config config);
 		inline const VkPipeline GetVkPipeline() const { return m_VkPipeline; }
 		inline const VkPipelineLayout GetVkPipelineLayout() const { return m_PipelineLayout; }
 		inline const Config GetConfig() const { return m_Config; }
 	private:
-		VkDevice m_VkDevice;
-
 		VkPipeline m_VkPipeline;
 		VkPipelineCache pipelineCache;
 		VkPipelineLayout m_PipelineLayout;

@@ -12,6 +12,7 @@
 #include "VulkanImage.h"
 
 #include "Runtime/RenderSystem/RenderSystem.h"
+#include "Runtime/RenderSystem/Model.h"
 
 
 #include <GLFW/glfw3.h>
@@ -61,12 +62,15 @@ namespace Next {
 		Ref<VulkanVertexBuffer> m_VulkanVertexBuffer;
 		Ref<VulkanIndexBuffer> m_VulkanIndexBuffer;
 		Ref<VulkanImage> m_VulkanImage;
+		Ref<VulkanImage> m_DepthImage;
 		std::vector<Ref<VulkanUniformBuffer>> m_VulkanUniformBuffer;
 
 		VkDescriptorSetLayout descriptorSetLayout;
 		std::vector<VkDescriptorSet> descriptorSets;
 
 		VkDescriptorPool m_UniformDescriptorPool;
+
+		Ref<Model> model;
 
 	private:
 		void createVkInstance();

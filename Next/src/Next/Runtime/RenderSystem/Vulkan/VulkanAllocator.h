@@ -1,6 +1,5 @@
 #pragma once
 
-#include "VulkanDevice.h"
 #include "VulkanMemoryAllocator/vk_mem_alloc.h"
 
 #include <string>
@@ -19,7 +18,7 @@ namespace Next {
 		VulkanAllocator() : m_Tag("Default") {}
 		VulkanAllocator(const std::string& tag);
 		~VulkanAllocator();
-		static void Init(Ref<VulkanDevice> device, VkInstance instance);
+		static void Init(VkInstance instance);
 		static void Shutdown();
 
 		static VmaAllocator& GetVMAAllocator();

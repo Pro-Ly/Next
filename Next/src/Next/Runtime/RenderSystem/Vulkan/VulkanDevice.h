@@ -3,6 +3,7 @@
 #include "VulkanUtils.h"
 #include "Core/Ref.h"
 #include "VulkanSwapChain.h"
+#include "VulkanAllocator.h"
 
 #include <vector>
 
@@ -31,8 +32,12 @@ namespace Next {
 
 		//Image
 
-		VkImageView CreateImageView(VkImage image, VkFormat format);
+		VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);
 
+		VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+		VkFormat findDepthFormat();
+
+		inline VkSampleCountFlagBits GetSampleCountFlagBits() const { return m_MSAASamples; }
 	private:
 		struct QueueFamilyIndices {
 			std::optional<uint32_t> graphicsFamily;
@@ -46,8 +51,6 @@ namespace Next {
 		VkQueue m_GraphicsQueue;
 		VkQueue m_PresentQueue;
 
-		Ref<VulkanSwapChain> m_VulkanSwapChain;
-
 		std::vector<VkCommandPool> m_RenderCmdPools;
 		std::vector<VkCommandBuffer> m_RenderCmdBuffers;
 
@@ -60,13 +63,21 @@ namespace Next {
 		VkDevice m_VkDevice;
 		QueueFamilyIndices m_QueueFamilyIndices;
 
+		//MSAA
+		VkSampleCountFlagBits m_MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		VkImage m_ColorImage;
+		VkImageView m_ColorImageView;
+		VmaAllocation m_ColorResourceImageAllocation;
+
 	private:
 		void selectPhysicalDevice();
 		void createVkDeviceAndQueue();
-		void createSwapChain();
+		Ref<VulkanSwapChain> createSwapChain();
 		void createCommandPools();
 		void createCommandBuffers();
+		void createColorResources();
 		QueueFamilyIndices getQueueFamilies(VkPhysicalDevice device);
+		VkSampleCountFlagBits getMaxUsableSampleCount();
 	private:
 		friend class VulkanContext;
 	};

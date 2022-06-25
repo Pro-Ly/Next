@@ -2,15 +2,17 @@
 #include "VulkanPipeline.h"
 #include "Core/Utilities/FileUtils.h"
 #include "Core/Core.h"
+#include "VulkanRenderer.h"
 
 #include <ostream>
 
 namespace Next {
 
 
-	VulkanPipeline::VulkanPipeline(VkDevice vkDevice)
-		:m_VkDevice(vkDevice)
+	VulkanPipeline::VulkanPipeline()
 	{
+		auto device = VulkanRenderer::GetContext()->m_VulkanDevice->GetVkDevice();
+
 		VkPipelineCacheCreateInfo cacheInfo{};
 		cacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 		cacheInfo.pNext = nullptr;
@@ -18,7 +20,7 @@ namespace Next {
 		//cacheInfo.initialDataSize = ;
 		//cacheInfo.pInitialData = ;
 
-		NX_CHECK_VKRESULT(vkCreatePipelineCache(m_VkDevice, &cacheInfo, nullptr, &pipelineCache));
+		NX_CHECK_VKRESULT(vkCreatePipelineCache(device, &cacheInfo, nullptr, &pipelineCache));
 	}
 
 	VulkanPipeline::~VulkanPipeline()
@@ -29,6 +31,8 @@ namespace Next {
 	void VulkanPipeline::Set(Config config)
 	{
 		m_Config = config;
+
+		auto vulkanDevice = VulkanRenderer::GetContext()->m_VulkanDevice;
 
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -95,8 +99,18 @@ namespace Next {
 
 		VkPipelineMultisampleStateCreateInfo multisampling{};
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		multisampling.sampleShadingEnable = VK_FALSE;
-		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		multisampling.rasterizationSamples = vulkanDevice->GetSampleCountFlagBits();
+		multisampling.sampleShadingEnable = VK_TRUE; // enable sample shading in the pipeline
+		multisampling.minSampleShading = .2f; // min fraction for sample shading; closer to one is smoother
+
+		VkPipelineDepthStencilStateCreateInfo depthStencil{};
+		depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		depthStencil.depthTestEnable = VK_TRUE;
+		depthStencil.depthWriteEnable = VK_TRUE;
+		depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;// lower depth = closer
+		depthStencil.depthBoundsTestEnable = VK_FALSE;
+		depthStencil.minDepthBounds = 0.0f; // Optional
+		depthStencil.maxDepthBounds = 1.0f; // Optional
 
 		VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 		colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -118,7 +132,7 @@ namespace Next {
 		pipelineLayoutInfo.setLayoutCount = 1;
 		pipelineLayoutInfo.pSetLayouts = &config.vkDescriptorSetLayout;
 
-		NX_CHECK_VKRESULT(vkCreatePipelineLayout(m_VkDevice, &pipelineLayoutInfo, nullptr, &m_PipelineLayout));
+		NX_CHECK_VKRESULT(vkCreatePipelineLayout(vulkanDevice->GetVkDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout));
 
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -134,10 +148,12 @@ namespace Next {
 		pipelineInfo.renderPass = config.renderPass;
 		pipelineInfo.subpass = 0;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-		NX_CHECK_VKRESULT(vkCreateGraphicsPipelines(m_VkDevice, pipelineCache, 1, &pipelineInfo, nullptr, &m_VkPipeline));
+		pipelineInfo.pDepthStencilState = &depthStencil;
+
+		NX_CHECK_VKRESULT(vkCreateGraphicsPipelines(vulkanDevice->GetVkDevice(), pipelineCache, 1, &pipelineInfo, nullptr, &m_VkPipeline));
 
 		config.vulkanShader->Release();
-		saveGraphicsPiplineCache(m_VkDevice, pipelineCache);
+		saveGraphicsPiplineCache(vulkanDevice->GetVkDevice(), pipelineCache);
 	}
 
 	void VulkanPipeline::saveGraphicsPiplineCache(VkDevice device, VkPipelineCache pipelineCache)

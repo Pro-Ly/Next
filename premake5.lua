@@ -18,6 +18,7 @@ IncludeDir["Glad"] = "Next/vendor/Glad/include"
 IncludeDir["ImGui"] = "Next/vendor/imgui"
 IncludeDir["glm"] = "Next/vendor/glm"
 IncludeDir["stb_image"] = "Next/vendor/stb_image"
+IncludeDir["tiny_obj_loader"] = "Next/vendor/tiny_obj_loader"
 IncludeDir["VulkanSDK"] = "Next/vendor/Vulkan"
 
 group "Dependecies"
@@ -46,6 +47,7 @@ project "Next"
         "%{prj.name}/src/**.cpp",
         "%{prj.name}/vendor/stb_image/**.h",
         "%{prj.name}/vendor/stb_image/**.cpp",
+        "%{prj.name}/vendor/tiny_obj_loader/**.h",
         "%{prj.name}/vendor/glm/glm/**.hpp",
         "%{prj.name}/vendor/glm/glm/**.inl",
         "%{prj.name}/vendor/Vulkan/Include/**.h",
@@ -74,6 +76,7 @@ project "Next"
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.stb_image}",
+        "%{IncludeDir.tiny_obj_loader}",
         "%{IncludeDir.VulkanSDK}/Include",
     }
 

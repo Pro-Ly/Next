@@ -248,7 +248,7 @@ namespace Next {
 
 		for (uint32_t i = 0; i < desiredNumberOfSwapchainImages; i++)
 		{
-			m_SwapChainImageViews[i] = vulkanDevice->CreateImageView(m_SwapChainImages[i], m_SurfaceFormat.format);
+			m_SwapChainImageViews[i] = vulkanDevice->CreateImageView(m_SwapChainImages[i], m_SurfaceFormat.format, VK_IMAGE_ASPECT_COLOR_BIT,1);
 		}
 
 	}

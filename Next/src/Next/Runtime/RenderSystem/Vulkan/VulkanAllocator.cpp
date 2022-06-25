@@ -1,5 +1,6 @@
 #include "nxpch.h"
 #include "VulkanAllocator.h"
+#include "VulkanRenderer.h"
 
 namespace Next {
 
@@ -16,8 +17,10 @@ namespace Next {
 
 	}
 
-	void VulkanAllocator::Init(Ref<VulkanDevice> device,VkInstance instance)
+	void VulkanAllocator::Init(VkInstance instance)
 	{
+		auto device = VulkanRenderer::GetContext()->m_VulkanDevice;
+
 		s_Data = new VulkanAllocatorData();
 
 		VmaAllocatorCreateInfo allocatorInfo = {};
@@ -36,16 +39,16 @@ namespace Next {
 
 		VmaAllocation allocation;
 		vmaCreateBuffer(s_Data->Allocator, &bufferCreateInfo, &allocCreateInfo, &outBuffer, &allocation, nullptr);
-		
+
 		// TODO: Tracking
 		VmaAllocationInfo allocInfo{};
 		vmaGetAllocationInfo(s_Data->Allocator, allocation, &allocInfo);
-		//NX_ALLOCATOR_LOG("VulkanAllocator ({0}): allocating buffer; size = {1}", m_Tag, Utils::BytesToString(allocInfo.size));
+		NX_CORE_INFO("VulkanAllocator ({0}): allocating buffer; size = {1} Bytes", m_Tag, allocInfo.size);
 
-		//{
-		//	s_Data->TotalAllocatedBytes += allocInfo.size;
-		//	HZ_ALLOCATOR_LOG("VulkanAllocator ({0}): total allocated since start is {1}", m_Tag, Utils::BytesToString(s_Data->TotalAllocatedBytes));
-		//}
+		s_Data->TotalAllocatedBytes += allocInfo.size;
+		NX_CORE_INFO("VulkanAllocator ({0}): total allocated since start is {1} Bytes", m_Tag, s_Data->TotalAllocatedBytes);
+
+
 
 		return allocation;
 	}
@@ -58,21 +61,21 @@ namespace Next {
 		VmaAllocation allocation;
 		vmaCreateImage(s_Data->Allocator, &imageCreateInfo, &allocCreateInfo, &outImage, &allocation, nullptr);
 
-		//// TODO: Tracking
-		//VmaAllocationInfo allocInfo;
-		//vmaGetAllocationInfo(s_Data->Allocator, allocation, &allocInfo);
-		//NX_ALLOCATOR_LOG("VulkanAllocator ({0}): allocating image; size = {1}", m_Tag, Utils::BytesToString(allocInfo.size));
+		// TODO: Tracking
+		VmaAllocationInfo allocInfo;
+		vmaGetAllocationInfo(s_Data->Allocator, allocation, &allocInfo);
+		NX_CORE_INFO("VulkanAllocator ({0}): allocating image; size = {1} Bytes", m_Tag, allocInfo.size);
 
-		//{
-		//	s_Data->TotalAllocatedBytes += allocInfo.size;
-		//	NX_ALLOCATOR_LOG("VulkanAllocator ({0}): total allocated since start is {1}", m_Tag, Utils::BytesToString(s_Data->TotalAllocatedBytes));
-		//}
+		s_Data->TotalAllocatedBytes += allocInfo.size;
+		NX_CORE_INFO("VulkanAllocator ({0}): total allocated since start is {1} Bytes", m_Tag, s_Data->TotalAllocatedBytes);
+
+
 		return allocation;
 	}
 
 	void VulkanAllocator::DestroyImage(VkImage image, VmaAllocation allocation)
 	{
-		NX_CORE_ASSERT(image && allocation ,"");
+		NX_CORE_ASSERT(image && allocation, "");
 		vmaDestroyImage(s_Data->Allocator, image, allocation);
 	}
 
@@ -95,7 +98,7 @@ namespace Next {
 
 	void VulkanAllocator::DestroyBuffer(VkBuffer buffer, VmaAllocation allocation)
 	{
-		NX_CORE_ASSERT(buffer && allocation,"");
+		NX_CORE_ASSERT(buffer && allocation, "");
 		vmaDestroyBuffer(s_Data->Allocator, buffer, allocation);
 	}
 }
