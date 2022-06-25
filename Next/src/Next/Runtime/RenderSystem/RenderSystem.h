@@ -1,41 +1,33 @@
 #pragma once
 
 #include "Next/Core\Application.h"
+#include "Core/Config.h"
 #include "RendererAPI.h"
 
 #include <memory>
 
-extern struct GLFWwindow;
-
 namespace Next {
-
-	static RendererAPI* s_RendererAPI = nullptr;
 
 	class RenderSystem
 	{
 	public:
 		RenderSystem() = default;
 		virtual ~RenderSystem();
-		static void Select(RendererAPIType apiType);
-		static void Init(GLFWwindow* window);
+		inline static const RendererConfig& GetConfig() { return s_Config; };
+		inline static RendererAPI* GetRenderer() { return s_Renderer; };
+		static void Init(const RendererConfig& rendererConfig);
 		static void Shutdown();
-		static void DrawFrame();
-		//template<typename FuncT>
-		//static void Submit(FuncT&& func)
-		//{
-		//	auto renderCmd = [](void* ptr) {
-		//		auto pFunc = (FuncT*)ptr;
-		//		(*pFunc)();
+		static void Tick(Timestep timestep);
 
-		//		// NOTE: Instead of destroying we could try and enforce all items to be trivally destructible
-		//		// however some items like uniforms which contain std::strings still exist for now
-		//		// static_assert(std::is_trivially_destructible_v<FuncT>, "FuncT must be trivially destructible");
-		//		pFunc->~FuncT();
-		//	};
-		//	auto storageBuffer = GetRenderCommandQueue().Allocate(renderCmd, sizeof(func));
-		//	new (storageBuffer) FuncT(std::forward<FuncT>(func));
-		//}
+		inline static const double GetCurTime() { return s_CurTime; }
+		inline static const Timestep GetCurTimeStep() { return s_CurTimeStep; }
+
 	private:
-		static GLFWwindow* m_Window;
+		inline static RendererAPI* s_Renderer = nullptr;
+		inline static RendererConfig s_Config;
+
+	private:
+		inline static double s_CurTime = 0.0;
+		inline static Timestep s_CurTimeStep = 0.0;
 	};
 }

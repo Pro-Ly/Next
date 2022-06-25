@@ -1,25 +1,22 @@
 #include "nxpch.h"
 #include "RendererAPI.h"
-#include "Core/Core.h"
-#include "Runtime/Platform/Vulkan/VulkanRendererAPI.h"
+#include "Runtime/RenderSystem/Vulkan/VulkanRenderer.h"
 
 namespace Next {
 
-	RendererAPIType RendererAPI::s_APIType = RendererAPIType::None;
 
 	RendererAPI* RendererAPI::Create(RendererAPIType apiType)
 	{
 		switch (apiType)
 		{
-			case RendererAPIType::None:
-				NX_CORE_ASSERT(false, "Cannot Create None API Type!!")
-				return nullptr;
-			case RendererAPIType::Vulkan:
-				NX_CORE_ASSERT(s_APIType != apiType,"Already Create APIType !!")
-				s_APIType = apiType;
-				return new VulkanRendererAPI();
+			case Next::RendererAPIType::None:
+				NX_CORE_ASSERT(true, "None API Type!");
+				break;
+			case Next::RendererAPIType::Vulkan:
+				return new VulkanRenderer();
+				break;
 		}
-		NX_CORE_ASSERT(false, "Unknown API Type!!")
+		NX_CORE_ASSERT(true, "Unknown API Type!");
 		return nullptr;
 	}
 

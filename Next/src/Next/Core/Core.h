@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 #ifdef NX_PLATFORM_WINDOWS
 #if NX_DYNAMIC_LINK
 	#ifdef NX_BUILD_DLL

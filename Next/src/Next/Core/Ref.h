@@ -14,6 +14,7 @@ namespace Next {
 		void IncRefCount() const
 		{
 			m_RefCount++;
+			
 		}
 		void DecRefCount() const
 		{
@@ -178,6 +179,7 @@ namespace Next {
 			if (m_Instance)
 			{
 				m_Instance->IncRefCount();
+				NX_CORE_INFO("{0} RefCount: {1}", typeid(this).name(), m_Instance->GetRefCount());
 				RefUtils::AddToLiveReferences((void*)m_Instance);
 			}
 		}
@@ -187,11 +189,12 @@ namespace Next {
 			if (m_Instance)
 			{
 				m_Instance->DecRefCount();
+				NX_CORE_INFO("{0} RefCount: {1}", typeid(this).name(), m_Instance->GetRefCount());
 				if (m_Instance->GetRefCount() == 0)
 				{
 					delete m_Instance;
 					RefUtils::RemoveFromLiveReferences((void*)m_Instance);
-					m_Instance = nullptr;
+					m_Instance = nullptr; 
 				}
 			}
 		}

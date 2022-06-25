@@ -1,28 +1,46 @@
 #include "nxpch.h"
 #include "Shader.h"
-#include "RendererAPI.h"
-#include "Runtime/Platform/Vulkan/VulkanShader.h"
+#include "Core/Utilities/StringUtils.h"
 
+#include <fstream>
 
 namespace Next {
 
-	Ref<Shader> Shader::Create(const std::string& filepath)
+	//TODO merge vert and frag shader
+	Shader::Shader(const std::string& filePath)
+		:m_Path(filePath)
 	{
-		Ref<Shader> result = nullptr;
-
-		switch (RendererAPI::GetCurrentAPIType())
-		{
-			case RendererAPIType::None: return nullptr;
-			case RendererAPIType::Vulkan:
-				result = Ref<VulkanShader>::Create(filepath);
-				break;
-		}
-		return result;
+		m_Name = StringUtils::GetFileName(filePath);
 	}
 
-	Ref<Shader> Shader::CreateFromString(const std::string& shaderSrc)
+	//TODO REMOVE TEMP
+	Shader::Shader(const std::string& vertFilePath, const std::string& fragFilePath)
 	{
-		return nullptr;
+		m_Name = StringUtils::GetFileName(vertFilePath);
+		m_VertCode = readFile(vertFilePath);
+		m_FragCode = readFile(fragFilePath);
 	}
 
+	Shader::~Shader()
+	{
+		m_VertCode.clear();
+		m_FragCode.clear();
+	}
+
+	std::vector<char> Shader::readFile(const std::string& filePath)
+	{
+		std::ifstream file(filePath, std::ios::ate | std::ios::binary);
+
+		NX_CORE_ASSERT(file.is_open(), "failed to open file!");
+
+		size_t fileSize = (size_t)file.tellg();
+		std::vector<char> buffer(fileSize);
+
+		file.seekg(0);
+		file.read(buffer.data(), fileSize);
+
+		file.close();
+
+		return buffer;
+	}
 }

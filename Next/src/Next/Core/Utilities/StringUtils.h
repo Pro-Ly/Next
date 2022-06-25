@@ -3,11 +3,10 @@
 #include <string>
 namespace Next {
 
-	class StringUtils
-	{
-	public:
-		static std::string GetFileName(const std::string& filePath);
-	};
+	namespace StringUtils {
+
+		std::string GetFileName(const std::string& filePath);
+	}
 }
 
 

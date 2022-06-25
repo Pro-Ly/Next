@@ -4,23 +4,9 @@
 
 #include "Next\Core\Ref.h"
 #include "Next\Core\Events\Event.h"
+#include "Config.h"
+
 namespace Next {
-
-	class VulkanSwapChain;
-
-	struct WindowSpecification
-	{
-		std::string Title;
-		unsigned int Width;
-		unsigned int Height;
-
-		WindowSpecification(const std::string& title = "Next Engine",
-			unsigned int width = 1280,
-			unsigned int height = 720)
-			: Title(title), Width(width), Height(height)
-		{
-		}
-	};
 
 	//Interface representing a desktop system based Window
 	class NEXT_API Window : public RefCounted

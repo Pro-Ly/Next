@@ -8,8 +8,6 @@
 #include "Runtime/Platform/Windows/WindowsWindow.h"
 #include "Runtime/Platform/Windows/WindowsInput.h"
 
-#include "Runtime/RenderSystem/RendererAPI.h"
-
 namespace Next {
 
 	static bool s_GLFWInitialized = false;
@@ -37,10 +35,6 @@ namespace Next {
 
 	void WindowsWindow::InitWindow(const WindowSpecification& windowSpec)
 	{
-		//----------------------------
-		// General Part
-		//----------------------------
-
 		m_Data.Title = windowSpec.Title;
 		m_Data.Width = windowSpec.Width;
 		m_Data.Height = windowSpec.Height;
@@ -50,19 +44,24 @@ namespace Next {
 		if (!s_GLFWInitialized)
 		{
 			// TODO : glfwTerminate on system shutdown
-			int success = glfwInit();
-			NX_CORE_ASSERT(success, "Could not intialize GLFW!");
+			NX_CORE_ASSERT(glfwInit(), "Could not intialize GLFW!");
 			glfwSetErrorCallback(GLFWErrorCallback);
 			s_GLFWInitialized = true;
 		}
 
-		//glfw was originally designed to create an opengl context , so we need to tell it to not create an opengl context
-		if (RendererAPI::GetCurrentAPIType() == RendererAPIType::Vulkan)
-			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);//Only for Vulkan!!!
 
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // TODO TEMP NOT RESIZE
 
 		m_Window = glfwCreateWindow((int)windowSpec.Width, (int)windowSpec.Height, m_Data.Title.c_str(), nullptr, nullptr);
+
+		// Update window size to actual size
+		{
+			int width, height;
+			glfwGetWindowSize(m_Window, &width, &height);
+			m_Data.Width = width;
+			m_Data.Height = height;
+		}
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 
@@ -181,6 +180,15 @@ namespace Next {
 	void WindowsWindow::Init()
 	{
 		InitWindow(m_WindowSpec);
+
+		if (glfwRawMouseMotionSupported())
+		{
+			glfwSetInputMode(m_Window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+		}
+		else
+		{
+			NX_CORE_ERROR("GLFW don't support raw motion input");
+		}
 	}
 
 }

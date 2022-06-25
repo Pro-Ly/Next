@@ -15,29 +15,26 @@ namespace Next {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application()
+	Application::Application(const GameEngineSpecification& engineSpec)
 	{
 		NX_CORE_ASSERT(!s_Instance, "Application already exists!");
 		s_Instance = this;
 
-		RenderSystem::Select(RendererAPIType::Vulkan);
-
 		// -------------------------------------------------------------------
 		// Create Window With Vulkan ( For Now )
 		// -------------------------------------------------------------------
-		m_Window = std::unique_ptr<Window>(Window::Create());
-		m_Window->Init();
-		m_Window->SetEventCallback(NX_BIND_EVENT_FN(Application::OnEvent));
 
-		RenderSystem::Init((GLFWwindow*)m_Window->GetNativeWindow());
+		StartWindow(engineSpec.windowSpec);
 
-		m_ImGui = std::make_unique<VulkanImGui>();
-		m_ImGui->Init();
+		//--------------------------------------------------------------------
+		// Systems Init
+		//--------------------------------------------------------------------
+
+		RenderSystem::Init(engineSpec.rendererConfig);
 	}
 
 	Application::~Application()
 	{
-		m_ImGui->Destroy();
 		RenderSystem::Shutdown();
 	}
 
@@ -45,6 +42,13 @@ namespace Next {
 	{
 		m_LayerStack.PushLayer(layer);
 		layer->OnAttach();
+	}
+	
+	void Application::PopLayer(Layer* layer)
+	{
+		m_LayerStack.PopLayer(layer);
+		layer->OnDetach();
+		delete(layer);
 	}
 
 	void Application::PushOverlay(Layer* layer)
@@ -81,19 +85,21 @@ namespace Next {
 
 			if (!m_Minimized)
 			{
-				for (Layer* layer : m_LayerStack)
-				{
-					layer->OnUpdate(timestep);
-				}
+				
+				//for (Layer* layer : m_LayerStack)
+				//{
+				//	layer->OnUpdate(timestep);
+				//}
+				RenderSystem::Tick(timestep);
 			}
-
-		
-			m_ImGui->BeginFrame();
-			for (Layer* layer : m_LayerStack)
-				layer->OnImGuiRender();
-
-			m_ImGui->EndFrame();
 		}
+	}
+
+	void Application::StartWindow(const WindowSpecification& spec)
+	{
+		m_Window = std::unique_ptr<Window>(Window::Create(spec));
+		m_Window->Init();
+		m_Window->SetEventCallback(NX_BIND_EVENT_FN(Application::OnEvent));
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)

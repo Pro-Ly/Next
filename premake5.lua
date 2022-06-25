@@ -50,17 +50,24 @@ project "Next"
         "%{prj.name}/vendor/glm/glm/**.inl",
         "%{prj.name}/vendor/Vulkan/Include/**.h",
         "%{prj.name}/vendor/Vulkan/Include/**.hpp",
+        "%{prj.name}/vendor/VulkanMemoryAllocator/**.h",
+        "%{prj.name}/vendor/VulkanMemoryAllocator/**.cpp",
     }
 
     defines
     {
         "_CRT_SECURE_NO_WARNINGS",
+        "GLM_FORCE_RADIANS",
+        "GLM_FORCE_LEFT_HANDED",
+        "GLM_FORCE_DEPTH_ZERO_TO_ONE",
     }
 
     includedirs
     {
         "%{prj.name}/src/",
         "%{prj.name}/src/Next/",
+        "%{prj.name}/src/Next/vendor/",
+        "%{prj.name}/vendor/",
         "%{prj.name}/vendor/spdlog/include",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.Glad}",
@@ -80,7 +87,6 @@ project "Next"
         "GLFW",
         "Glad",
         "ImGui",
-        "opengl32.lib",
         "Dwmapi.lib",
         "Vulkan-1.lib",
     }

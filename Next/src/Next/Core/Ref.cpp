@@ -19,7 +19,7 @@ namespace Next {
 		void RemoveFromLiveReferences(void* instance)
 		{
 			std::scoped_lock<std::mutex> lock(s_LiveReferenceMutex);
-			NX_CORE_ASSERT(instance,"");
+			NX_CORE_ASSERT(instance && !s_LiveReferences.empty(),"");
 			NX_CORE_ASSERT(s_LiveReferences.find(instance) != s_LiveReferences.end(),"");
 			s_LiveReferences.erase(instance);
 		}

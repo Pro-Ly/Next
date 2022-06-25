@@ -2,37 +2,37 @@
 
 #include "ImGuiBase.h"
 
-#include <vulkan/vulkan.h>
+#include "Runtime/RenderSystem/vulkan/VulkanUtils.h"
+#include <GLFW/glfw3.h>
+#include "Runtime/RenderSystem/Vulkan/VulkanRenderer.h"
+
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_vulkan.h>
+
+#include <vector>
 
 namespace Next {
 
+	class EditorLayer;
+
 	class VulkanImGui final : public ImGuiBase
 	{
-		struct ImGui_ImplVulkan_InitInfo
-		{
-			VkInstance                      Instance;
-			VkPhysicalDevice                PhysicalDevice;
-			VkDevice                        Device;
-			uint32_t                        QueueFamily;
-			VkQueue                         Queue;
-			VkPipelineCache                 PipelineCache;
-			VkDescriptorPool                DescriptorPool;
-			uint32_t                        Subpass;
-			uint32_t                        MinImageCount;          // >= 2
-			uint32_t                        ImageCount;             // >= MinImageCount
-			VkSampleCountFlagBits           MSAASamples;            // >= VK_SAMPLE_COUNT_1_BIT (0 -> default to VK_SAMPLE_COUNT_1_BIT)
-			const VkAllocationCallbacks* Allocator;
-			void                            (*CheckVkResultFn)(VkResult err);
-		};
-
 	public:
-		VulkanImGui() = default;
+		VulkanImGui(EditorLayer* editorLayer);
 		virtual ~VulkanImGui() override = default;
 
-		virtual void Init() override;
+		virtual void Init() override {};
+		virtual void BeginFrame() override {};
+		virtual void EndFrame() override {};
 		virtual void Destroy() override;
-		virtual void BeginFrame() override;
-		virtual void EndFrame() override;
+		virtual void OnRender() override;
+	private:
+
+		void SetUIColorStyle();
+	private:
+		VulkanRenderer* m_vkAPI = nullptr;
+		EditorLayer* m_EditorLayer;
+		std::vector<VkCommandBuffer> m_CommandBuffers;
 	};
 
 }

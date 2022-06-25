@@ -1,39 +1,39 @@
 #include "nxpch.h"
 #include "RenderSystem.h"
-#include "Runtime/RenderSystem/RendererAPI.h"
+#include "Core/Config.h"
 
 namespace Next {
 
-	GLFWwindow* RenderSystem::m_Window = nullptr;
 
 	RenderSystem::~RenderSystem()
 	{
 
 	}
 
-	void RenderSystem::Select(RendererAPIType apiType)
+	void RenderSystem::Init(const RendererConfig& rendererConfig)
 	{
-		s_RendererAPI = RendererAPI::Create(apiType);
-	}
+		s_Config = rendererConfig;
 
-	void RenderSystem::Init(GLFWwindow* window)
-	{
-		m_Window = window;
-		s_RendererAPI->Init(window);
+		s_Renderer = RendererAPI::Create(rendererConfig.RendererApi);
+
+		s_Renderer->Init();
 	}
 
 	void RenderSystem::Shutdown()
 	{
-		if (s_RendererAPI)
-		{
-			s_RendererAPI->Shutdown();
-			s_RendererAPI = nullptr;
-		}
+		s_Renderer->ShutDown();
+		delete s_Renderer;
+		s_Renderer = nullptr;
 	}
 
-	void RenderSystem::DrawFrame()
+	void RenderSystem::Tick(Timestep timestep)
 	{
-		s_RendererAPI->drawFrame();
+		s_CurTimeStep = timestep;
+		s_CurTime += timestep;
+
+		s_Renderer->BeginFrame();
+		s_Renderer->drawFrame();
+		s_Renderer->EndFrame();
 	}
 
 }
